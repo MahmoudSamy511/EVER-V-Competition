@@ -27,11 +27,10 @@ def send_commands():
     steering_msg.data = 17.9597315  # Steering angle for turning (adjust as needed)
     steering_pub.publish(steering_msg)
     
-    rospy.sleep(20)  # Sleep for 2 seconds
+    rospy.sleep(8.2)  # Sleep for 2 seconds
     
     # Stop turning and apply brakes
-    steering_pub.publish(Float64())  # Stop turning
-    brakes_msg.data = 1.0
+    brakes_msg.data = 0.65
     cmd_vel_pub.publish(Float64())  # Stop gas pedal
     brakes_pub.publish(brakes_msg)
 
