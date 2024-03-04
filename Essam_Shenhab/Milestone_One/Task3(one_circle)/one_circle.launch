@@ -1,0 +1,6 @@
+<launch>
+
+    <node name="one_circle_node" pkg="beginner_tutorials" type="one_circle.py" output="screen"/>
+    <node name="save_to_csv_node" pkg="beginner_tutorials" type="save_to_csv.py" output="screen"/>
+
+</launch>
