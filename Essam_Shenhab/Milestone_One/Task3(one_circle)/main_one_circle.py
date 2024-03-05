@@ -32,7 +32,7 @@ class OdomImuLogger:
     def imu_callback(self, msg):
         # Process and store IMU data
         time = datetime.fromtimestamp(rospy.Time.now().to_sec()).strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
-        imu_values = [time, msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z]
+        imu_values = [time, msg.linear_acceleration.x, msg.linear_acceleration.y, msg.linear_acceleration.y, msg.orientation.x, msg.orientation.y, msg.orientation.z, msg.angular_velocity.x, msg.angular_velocity.y, msg.angular_velocity.z]
         self.imu_data.append(imu_values)
 
     def save_to_csv(self):
@@ -49,7 +49,7 @@ class OdomImuLogger:
         # Write imu data to CSV
         with open("data/imu_data.csv", "w", newline="") as f:
             writer = csv.writer(f)
-            writer.writerow(["Timestamp", "Orientation_X", "Orientation_Y", "Orientation_Z", "Angular_Velocity_X", "Angular_Velocity_Y", "Angular_Velocity_Z"])
+            writer.writerow(["Timestamp", "Orientation_X", "Orientation_Y", "Orientation_Z", "Angular_Velocity_X", "Angular_Velocity_Y", "Angular_Velocity_Z", "Linear_Acceleration_X", "Linear_Acceleration_Y", "Linear_Acceleration_Z"])
             writer.writerows(self.imu_data)
 
 def main():
