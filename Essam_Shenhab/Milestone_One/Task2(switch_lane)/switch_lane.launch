@@ -1,6 +1,0 @@
-<launch>
-
-    <node name="switch_lane_node" pkg="beginner_tutorials" type="switch_lane.py" output="screen"/>
-    <node name="save_to_csv_node" pkg="beginner_tutorials" type="save_to_csv.py" output="screen"/>
-
-</launch>
