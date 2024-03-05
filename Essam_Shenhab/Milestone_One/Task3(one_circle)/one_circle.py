@@ -4,7 +4,7 @@ import rospy
 from std_msgs.msg import Float64
 import time
 
-def send_commands():
+def one_circle():
     rospy.init_node('simple_car_controller', anonymous=True)
     
     # Define ROS publishers
@@ -34,8 +34,11 @@ def send_commands():
     cmd_vel_pub.publish(Float64())  # Stop gas pedal
     brakes_pub.publish(brakes_msg)
 
+    rospy.sleep(7)
+    
+
 if __name__ == '__main__':
     try:
-        send_commands()
+        one_circle()
     except rospy.ROSInterruptException:
         pass

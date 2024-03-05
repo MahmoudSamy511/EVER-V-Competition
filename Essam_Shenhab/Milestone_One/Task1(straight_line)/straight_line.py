@@ -2,11 +2,8 @@
 
 import rospy
 from std_msgs.msg import Float64
-import time
 
 def straight_line():
-    rospy.init_node('simple_car_controller', anonymous=True)
-
     # Define ROS publishers
 
     cmd_vel_pub = rospy.Publisher('/cmd_vel', Float64, queue_size=10)
@@ -35,6 +32,8 @@ def straight_line():
     brakes_msg.data = 0.65
     cmd_vel_pub.publish(Float64())  # Stop gas pedal
     brakes_pub.publish(brakes_msg)
+
+    rospy.sleep(7)
 
 
 if __name__ == '__main__':
