@@ -5,8 +5,6 @@ from std_msgs.msg import Float64
 import time
 
 def one_circle():
-    rospy.init_node('simple_car_controller', anonymous=True)
-    
     # Define ROS publishers
     cmd_vel_pub = rospy.Publisher('/cmd_vel', Float64, queue_size=10)
     brakes_pub = rospy.Publisher('/brakes', Float64, queue_size=10)
@@ -27,14 +25,14 @@ def one_circle():
     steering_msg.data = 17.9597315  # Steering angle for turning (adjust as needed)
     steering_pub.publish(steering_msg)
     
-    rospy.sleep(9.1)  # Sleep for 2 seconds
+    rospy.sleep(8.976)  # Sleep for 2 seconds
     
     # Stop turning and apply brakes
     brakes_msg.data = 0.5211
     cmd_vel_pub.publish(Float64())  # Stop gas pedal
     brakes_pub.publish(brakes_msg)
 
-    rospy.sleep(7)
+    rospy.sleep(3.2)
     
 
 if __name__ == '__main__':
