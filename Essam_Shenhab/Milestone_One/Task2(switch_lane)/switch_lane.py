@@ -26,7 +26,7 @@ def switch_lane():
     steering_msg.data = 0.0  # Steering angle for turning (adjust as needed)
     steering_pub.publish(steering_msg)
 
-    rospy.sleep(14)
+    rospy.sleep(13.95)
 
     steering_msg = Float64()
     steering_msg.data = 9.0  # Steering angle for turning (adjust as needed)
@@ -58,7 +58,7 @@ def switch_lane():
     steering_msg.data = 0.0  # Steering angle for turning (adjust as needed)
     steering_pub.publish(steering_msg)
 
-    rospy.sleep(11.2)
+    rospy.sleep(11.75)
 
     # Stop turning and apply brakes
     steering_pub.publish(Float64())  # Stop turning
