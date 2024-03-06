@@ -5,9 +5,7 @@ from std_msgs.msg import Float64
 import time
 
 def switch_lane():
-    rospy.init_node('simple_car_controller', anonymous=True)
-
-    # Define ROS publishers
+      # Define ROS publishers
 
     cmd_vel_pub = rospy.Publisher('/cmd_vel', Float64, queue_size=10)
     brakes_pub = rospy.Publisher('/brakes', Float64, queue_size=10)
@@ -40,7 +38,7 @@ def switch_lane():
     steering_msg.data = 0.0  # Steering angle for turning (adjust as needed)
     steering_pub.publish(steering_msg)
 
-    rospy.sleep(0.125)
+    rospy.sleep(0.175)
 
     steering_msg = Float64()
     steering_msg.data = -9.0  # Steering angle for turning (adjust as needed)
@@ -60,7 +58,7 @@ def switch_lane():
     steering_msg.data = 0.0  # Steering angle for turning (adjust as needed)
     steering_pub.publish(steering_msg)
 
-    rospy.sleep(12)
+    rospy.sleep(11.2)
 
     # Stop turning and apply brakes
     steering_pub.publish(Float64())  # Stop turning
@@ -68,7 +66,7 @@ def switch_lane():
     cmd_vel_pub.publish(Float64())  # Stop gas pedal
     brakes_pub.publish(brakes_msg)
 
-    rospy.sleep(7)
+    rospy.sleep(3.2)
 
 
 
