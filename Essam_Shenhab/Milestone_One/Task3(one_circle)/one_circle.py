@@ -25,7 +25,7 @@ def one_circle():
     steering_msg.data = 17.9597315  # Steering angle for turning (adjust as needed)
     steering_pub.publish(steering_msg)
     
-    rospy.sleep(8.976)  # Sleep for 2 seconds
+    rospy.sleep(8.986)  # Sleep for 2 seconds
     
     # Stop turning and apply brakes
     brakes_msg.data = 0.5211
