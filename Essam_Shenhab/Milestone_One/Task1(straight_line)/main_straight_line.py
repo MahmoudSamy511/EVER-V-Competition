@@ -7,6 +7,7 @@ import csv
 import os
 from datetime import datetime
 from straight_line import straight_line
+from charts import main as plot
 
 class OdomImuLogger:
     def __init__(self):
@@ -56,6 +57,7 @@ def main():
     logger = OdomImuLogger()
     straight_line()
     logger.save_to_csv()
+    plot()
 
 if __name__ == '__main__':
     main()

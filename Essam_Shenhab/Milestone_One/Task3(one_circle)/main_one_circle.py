@@ -7,6 +7,7 @@ import csv
 import os
 from datetime import datetime
 from one_circle import one_circle
+from charts import main as plot
 
 class OdomImuLogger:
     def __init__(self):
@@ -56,6 +57,7 @@ def main():
     logger = OdomImuLogger()
     one_circle()
     logger.save_to_csv()
+    plot()
 
 if __name__ == '__main__':
     main()
