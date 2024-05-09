@@ -246,7 +246,7 @@ def pid_control(target_v, v, dist):
 
 def main():
     # Load reference path from CSV file
-    with open('bigger_infinity_shape_path.csv', newline='') as f:
+    with open('/home/egyptianego17/Desktop/EVER/EVER-V-Competition/Xavi/MotionPlanning/Control/bigger_infinity_shape_path.csv', newline='') as f:
         rows = list(reader(f, delimiter=','))
     
     # Create an odometry handler object

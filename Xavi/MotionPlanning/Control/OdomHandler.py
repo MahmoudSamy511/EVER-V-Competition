@@ -3,6 +3,7 @@ from geometry_msgs.msg import Point, Quaternion, Twist
 from std_msgs.msg import Header
 import rospy
 import numpy as np
+from scipy.ndimage import gaussian_filter1d
 from filterpy.kalman import KalmanFilter
 from tf.transformations import euler_from_quaternion
 import math
@@ -61,25 +62,34 @@ class OdometryHandler:
         """
         Callback function for odometry messages.
         """
-        # Extract position and filter it
+        # Extract and smooth position data using a Gaussian filter
         position = msg.pose.pose.position
-        measurement_position = np.array([position.x, position.y])
+        position_data = np.array([position.x, position.y])
+        smoothed_position = gaussian_filter1d(position_data, sigma=0.5)
+        
+        # Update Kalman filter with smoothed position data
         self.position_filter.predict()
-        self.position_filter.update(measurement_position)
+        self.position_filter.update(smoothed_position)
         self.position_x, self.position_y = self.position_filter.x
         
-        # Extract orientation and filter it
+        # Extract and smooth orientation data using a Gaussian filter
         orientation = msg.pose.pose.orientation
-        measurement_orientation = np.array([orientation.x, orientation.y, orientation.z, orientation.w])
+        orientation_data = np.array([orientation.x, orientation.y, orientation.z, orientation.w])
+        smoothed_orientation = gaussian_filter1d(orientation_data, sigma=0.5)
+        
+        # Update Kalman filter with smoothed orientation data
         self.orientation_filter.predict()
-        self.orientation_filter.update(measurement_orientation)
+        self.orientation_filter.update(smoothed_orientation)
         self.orientation_x, self.orientation_y, self.orientation_z, self.orientation_w = self.orientation_filter.x
         
-        # Extract linear velocity and filter it
+        # Extract and smooth linear velocity data using a Gaussian filter
         twist = msg.twist.twist.linear
-        measurement_velocity = np.array([twist.x, twist.y, twist.z])
+        velocity_data = np.array([twist.x, twist.y, twist.z])
+        smoothed_velocity = gaussian_filter1d(velocity_data, sigma=0.5)
+        
+        # Update Kalman filter with smoothed velocity data
         self.velocity_filter.predict()
-        self.velocity_filter.update(measurement_velocity)
+        self.velocity_filter.update(smoothed_velocity)
         self.linear_x, self.linear_y, self.linear_z = self.velocity_filter.x
         
         # Create a new Odometry message for the filtered data
@@ -114,7 +124,7 @@ def main():
     
     # Keep the node running
     rospy.spin()
-
+    
 if __name__ == '__main__':
     main()
 
