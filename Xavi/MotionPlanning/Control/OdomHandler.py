@@ -1,66 +1,120 @@
-import os
-import sys
-import time
-import math
-import numpy as np
-import matplotlib.pyplot as plt
-import rospy
-from std_msgs.msg import Float64
 from nav_msgs.msg import Odometry
-from csv import reader
-from matplotlib import pyplot as plt
+from geometry_msgs.msg import Point, Quaternion, Twist
+from std_msgs.msg import Header
+import rospy
+import numpy as np
+from filterpy.kalman import KalmanFilter
 from tf.transformations import euler_from_quaternion
-
-# Import your local modules
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../../MotionPlanning/")
-import Control.draw as draw
-import CurvesGenerator.cubic_spline as cs
-
+import math
 
 class OdometryHandler:
     """
-    Class to handle odometry data.
+    Class to handle odometry data and republish filtered data.
     """
     def __init__(self):
-        self.x = 0.0
-        self.y = 0.0
-        self.yaw = 0.0
-        self.v = 0.0
+        # Initialize state variables
+        self.position_x = 0.0
+        self.position_y = 0.0
+        self.orientation_x = 0.0
+        self.orientation_y = 0.0
+        self.orientation_z = 0.0
+        self.orientation_w = 0.0
+        self.linear_x = 0.0
+        self.linear_y = 0.0
+        self.linear_z = 0.0
         
-        # Initialize the subscriber to receive odometry messages
+        # Initialize subscriber for odometry messages
         rospy.Subscriber('/odom', Odometry, self.log_callback_odom)
-
+        
+        # Initialize publisher for filtered odometry messages
+        self.filtered_odom_pub = rospy.Publisher('/filtered_odom', Odometry, queue_size=10)
+        
+        # Initialize separate Kalman filters for position, orientation, and linear velocity
+        # Kalman filter for position (x, y)
+        self.position_filter = KalmanFilter(dim_x=2, dim_z=2)
+        self.position_filter.x = np.array([self.position_x, self.position_y])
+        self.position_filter.P = np.eye(2) * 1.0
+        self.position_filter.Q = np.eye(2) * 0.01
+        self.position_filter.R = np.eye(2) * 0.1
+        self.position_filter.F = np.eye(2)  # Assuming static position
+        self.position_filter.H = np.eye(2)
+        
+        # Kalman filter for orientation (x, y, z, w)
+        self.orientation_filter = KalmanFilter(dim_x=4, dim_z=4)
+        self.orientation_filter.x = np.array([self.orientation_x, self.orientation_y, self.orientation_z, self.orientation_w])
+        self.orientation_filter.P = np.eye(4) * 1.0
+        self.orientation_filter.Q = np.eye(4) * 0.01
+        self.orientation_filter.R = np.eye(4) * 0.1
+        self.orientation_filter.F = np.eye(4)  # Assuming static orientation
+        self.orientation_filter.H = np.eye(4)
+        
+        # Kalman filter for linear velocity (x, y, z)
+        self.velocity_filter = KalmanFilter(dim_x=3, dim_z=3)
+        self.velocity_filter.x = np.array([self.linear_x, self.linear_y, self.linear_z])
+        self.velocity_filter.P = np.eye(3) * 1.0
+        self.velocity_filter.Q = np.eye(3) * 0.01
+        self.velocity_filter.R = np.eye(3) * 0.1
+        self.velocity_filter.F = np.eye(3)  # Assuming constant velocity
+        self.velocity_filter.H = np.eye(3)
+        
     def log_callback_odom(self, msg):
         """
         Callback function for odometry messages.
         """
-        # Extract position from odometry
+        # Extract position and filter it
         position = msg.pose.pose.position
-        self.x = position.y
-        self.y = position.x
+        measurement_position = np.array([position.x, position.y])
+        self.position_filter.predict()
+        self.position_filter.update(measurement_position)
+        self.position_x, self.position_y = self.position_filter.x
         
-        # Extract orientation from odometry and compute yaw
+        # Extract orientation and filter it
         orientation = msg.pose.pose.orientation
-        orientation_list = [orientation.x, orientation.y, orientation.z, orientation.w]
-        (roll, pitch, yaw) = euler_from_quaternion (orientation_list)
-        # siny_cosp = 2 * (orientation.w * orientation.z + orientation.x * orientation.y)
-        # cosy_cosp = 1 - 2 * (orientation.y * orientation.y + orientation.z * orientation.z)
-        self.yaw = yaw
-        print("yaw: ", self.yaw)
-        # Extract linear velocity from odometry and compute speed
+        measurement_orientation = np.array([orientation.x, orientation.y, orientation.z, orientation.w])
+        self.orientation_filter.predict()
+        self.orientation_filter.update(measurement_orientation)
+        self.orientation_x, self.orientation_y, self.orientation_z, self.orientation_w = self.orientation_filter.x
+        
+        # Extract linear velocity and filter it
         twist = msg.twist.twist.linear
-        self.v = math.hypot(twist.x, twist.y)
-        print("X: ", self.x)
-        print("Y: ",self.y)
-        print("Yaw: ",self.yaw)
-        print("V: ",self.v)
+        measurement_velocity = np.array([twist.x, twist.y, twist.z])
+        self.velocity_filter.predict()
+        self.velocity_filter.update(measurement_velocity)
+        self.linear_x, self.linear_y, self.linear_z = self.velocity_filter.x
+        
+        # Create a new Odometry message for the filtered data
+        filtered_odom_msg = Odometry()
+        filtered_odom_msg.header.stamp = rospy.Time.now()
+        filtered_odom_msg.header.frame_id = 'odom'
+        
+        # Set the filtered position
+        filtered_odom_msg.pose.pose.position.x = self.position_x
+        filtered_odom_msg.pose.pose.position.y = self.position_y
+        
+        # Set the filtered orientation
+        filtered_odom_msg.pose.pose.orientation.x = self.orientation_x
+        filtered_odom_msg.pose.pose.orientation.y = self.orientation_y
+        filtered_odom_msg.pose.pose.orientation.z = self.orientation_z
+        filtered_odom_msg.pose.pose.orientation.w = self.orientation_w
+        
+        # Set the filtered linear velocity
+        filtered_odom_msg.twist.twist.linear.x = self.linear_x
+        filtered_odom_msg.twist.twist.linear.y = self.linear_y
+        filtered_odom_msg.twist.twist.linear.z = self.linear_z
+        
+        # Publish the filtered odometry message
+        self.filtered_odom_pub.publish(filtered_odom_msg)
 
 def main():
-    rospy.init_node('car_controller', anonymous=True)
-        
-    # Create an odometry handler object
+    # Initialize the ROS node
+    rospy.init_node('filtered_odom_publisher', anonymous=True)
+    
+    # Create an OdometryHandler object
     odom_handler = OdometryHandler()
+    
+    # Keep the node running
     rospy.spin()
 
 if __name__ == '__main__':
     main()
+
