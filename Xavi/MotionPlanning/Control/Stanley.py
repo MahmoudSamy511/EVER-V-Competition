@@ -265,7 +265,7 @@ def main():
     node = Node(odom_handler, x=cx[0], y=cy[0], yaw=cyaw[0], v=0.0)
     
     # Run the control loop
-    node.run(ref_path, target_speed=25.0 / 3.6)  # Target speed in m/s
+    node.run(ref_path, target_speed= 25.0 / 3.6)  # Target speed in m/s
 
 if __name__ == '__main__':
     main()
