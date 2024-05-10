@@ -25,16 +25,16 @@ def two_circles():
     steering_msg.data = 17.9597315  # Steering angle for turning (adjust as needed)
     steering_pub.publish(steering_msg)
     
-    rospy.sleep(9.585) 
+    rospy.sleep(13) 
 
     steering_msg = Float64()
     steering_msg.data = -17.9597315  # Steering angle for turning (adjust as needed)
     steering_pub.publish(steering_msg)
     
-    rospy.sleep(7.7)  
+    rospy.sleep(8.8)  
     
     # Stop turning and apply brakes
-    brakes_msg.data = 0.5211
+    brakes_msg.data = 0.3
     cmd_vel_pub.publish(Float64())  # Stop gas pedal
     brakes_pub.publish(brakes_msg)
 
