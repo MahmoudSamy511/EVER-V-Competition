@@ -25,7 +25,7 @@ def straight_line():
     steering_msg.data = 0.0  # Steering angle for turning (adjust as needed)
     steering_pub.publish(steering_msg)
 
-    rospy.sleep(15.2)
+    rospy.sleep(14.5)
 
     # Stop turning and apply brakes
     steering_pub.publish(Float64())  # Stop turning
