@@ -1,0 +1,3 @@
+- Create a py script saves the original odometry readings in a csv file.
+- Create a py script saves the odom data after applying the gaussian noise on it.
+- Create a py script saves the odom data after applying kalman filter on the noised data.
