@@ -14,31 +14,31 @@ def plot_data(original_file, noisy_file, filtered_file):
     colors = {'original': 'blue', 'noisy': 'orange', 'filtered': 'green'}
 
     # Plot X data
-    axs[0].plot(original_data['X'], label='Original X', color=colors['original'])
-    axs[0].plot(noisy_data['X'], label='Noisy X', color=colors['noisy'])
-    axs[0].plot(filtered_data['X'], label='Filtered X', color=colors['filtered'])
+    axs[0].plot(original_data['x'], label='Original X', color=colors['original'])
+    axs[0].plot(noisy_data['x'], label='Noisy X', color=colors['noisy'])
+    axs[0].plot(filtered_data['x'], label='Filtered X', color=colors['filtered'])
     axs[0].set_title('X data')
     axs[0].set_xlabel('Index')
     axs[0].set_ylabel('X')
     axs[0].legend()
 
     # Plot Y data
-    axs[1].plot(original_data['Y'], label='Original Y', color=colors['original'])
-    axs[1].plot(noisy_data['Y'], label='Noisy Y', color=colors['noisy'])
-    axs[1].plot(filtered_data['Y'], label='Filtered Y', color=colors['filtered'])
+    axs[1].plot(original_data['y'], label='Original Y', color=colors['original'])
+    axs[1].plot(noisy_data['y'], label='Noisy Y', color=colors['noisy'])
+    axs[1].plot(filtered_data['y'], label='Filtered Y', color=colors['filtered'])
     axs[1].set_title('Y data')
     axs[1].set_xlabel('Index')
     axs[1].set_ylabel('Y')
     axs[1].legend()
 
-    # Plot Yaw data
-    axs[2].plot(original_data['Yaw'], label='Original Yaw', color=colors['original'])
-    axs[2].plot(noisy_data['Yaw'], label='Noisy Yaw', color=colors['noisy'])
-    axs[2].plot(filtered_data['Yaw'], label='Filtered Yaw', color=colors['filtered'])
-    axs[2].set_title('Yaw data')
-    axs[2].set_xlabel('Index')
-    axs[2].set_ylabel('Yaw')
-    axs[2].legend()
+    # # Plot Yaw data
+    # axs[2].plot(original_data['yaw'], label='Original Yaw', color=colors['original'])
+    # axs[2].plot(noisy_data['yaw'], label='Noisy Yaw', color=colors['noisy'])
+    # axs[2].plot(filtered_data['yaw'], label='Filtered Yaw', color=colors['filtered'])
+    # axs[2].set_title('Yaw data')
+    # axs[2].set_xlabel('Index')
+    # axs[2].set_ylabel('Yaw')
+    # axs[2].legend()
     
     # Add a title to the overall figure
     fig.suptitle('Original, Noisy, and Filtered Data')
@@ -49,9 +49,9 @@ def plot_data(original_file, noisy_file, filtered_file):
 
 def main():
     # Define the file paths for original, noisy, and filtered data
-    original_file = 'logging/odom_position_data.csv'
-    noisy_file = 'noisy_data/odom_noisy_xyz.csv'
-    filtered_file = 'filtered_data/filtered_odom_xyz.csv'
+    original_file = 'before_anything.csv'
+    noisy_file = 'after_noise_adding.csv'
+    filtered_file = 'after_filtering.csv'
     
     # Plot the data
     plot_data(original_file, noisy_file, filtered_file)
