@@ -50,7 +50,9 @@ class OdometryHandler:
         self.v = 0.0
         
         # Initialize the subscriber to receive odometry messages
-        rospy.Subscriber('/odom', Odometry, self.log_callback_odom)
+        rospy.Subscriber('/filtered_odom', Odometry, self.log_callback_odom)
+        # Initialize the subscriber to receive odometry messages
+        # rospy.Subscriber('/odom', Odometry, self.log_callback_odom_test)
 
     def log_callback_odom(self, msg):
         """
