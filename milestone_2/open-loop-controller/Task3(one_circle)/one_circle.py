@@ -22,10 +22,10 @@ def one_circle():
     cmd_vel_pub.publish(gas_pedal_msg)
     
     steering_msg = Float64()
-    steering_msg.data = 17.9597315  # Steering angle for turning (adjust as needed)
+    steering_msg.data = 10  # Steering angle for turning (adjust as needed)
     steering_pub.publish(steering_msg)
     
-    rospy.sleep(8.986)  # Sleep for 2 seconds
+    rospy.sleep(14.4)  # Sleep for 2 seconds
     
     # Stop turning and apply brakes
     brakes_msg.data = 0.5211
