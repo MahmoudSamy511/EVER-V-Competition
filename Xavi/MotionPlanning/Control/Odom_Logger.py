@@ -54,7 +54,7 @@ class OdometryHandler:
                                           [0, 0, 0, 1]]),
             observation_matrices=np.array([[1, 0, 0, 0],
                                            [0, 1, 0, 0]]),
-            transition_covariance=np.eye(4) * 0.01,
+            transition_covariance=np.eye(4) * 0.1,
             observation_covariance=np.eye(2) * 0.1,
             initial_state_mean=np.array([self.state["position_x"], self.state["position_y"], 0, 0]),
             initial_state_covariance=np.eye(4) * 1.0
@@ -63,7 +63,7 @@ class OdometryHandler:
         self.orientation_filter = KalmanFilter(
             transition_matrices=np.eye(4),
             observation_matrices=np.eye(4),
-            transition_covariance=np.eye(4) * 0.01,
+            transition_covariance=np.eye(4) * 0.1,
             observation_covariance=np.eye(4) * 0.1,
             initial_state_mean=np.array([self.state["orientation_x"], self.state["orientation_y"], self.state["orientation_z"], self.state["orientation_w"]]),
             initial_state_covariance=np.eye(4) * 1.0
@@ -72,7 +72,7 @@ class OdometryHandler:
         self.velocity_filter = KalmanFilter(
             transition_matrices=np.eye(3),
             observation_matrices=np.eye(3),
-            transition_covariance=np.eye(3) * 0.01,
+            transition_covariance=np.eye(3) * 0.1,
             observation_covariance=np.eye(3) * 0.1,
             initial_state_mean=np.array([self.state["linear_x"], self.state["linear_y"], self.state["linear_z"]]),
             initial_state_covariance=np.eye(3) * 1.0
@@ -85,7 +85,7 @@ class OdometryHandler:
                 csv.writer(f).writerow(['timestamp', 'x', 'y', 'yaw'])
         if not os.path.exists(self.csv_noise_path):
             with open(self.csv_noise_path, 'w', newline='') as f:
-                csv.writer(f).writerow(['timestamp', 'x', 'y'])
+                csv.writer(f).writerow(['timestamp', 'x', 'y', 'yaw'])
         if not os.path.exists(self.csv_filtered_path):
             with open(self.csv_filtered_path, 'w', newline='') as f:
                 csv.writer(f).writerow(['timestamp', 'x', 'y', 'yaw'])
@@ -191,9 +191,9 @@ class OdometryHandler:
             csv.writer(f).writerow([timestamp, position.x, position.y, yaw])
 
         # Parameters for Gaussian noise
-        pos_noise_std_dev = 0.1  # Standard deviation for position noise
+        pos_noise_std_dev = 0.05  # Standard deviation for position noise
         ori_noise_std_dev = 0.01  # Standard deviation for orientation noise
-        vel_noise_std_dev = 0.05  # Standard deviation for velocity noise
+        vel_noise_std_dev = 0.03  # Standard deviation for velocity noise
         
         # Adding Gaussian noise to the data
         noisy_position_x = position.x + np.random.normal(0, pos_noise_std_dev)
