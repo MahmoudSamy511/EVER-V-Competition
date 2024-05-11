@@ -26,18 +26,18 @@ class C:
     Kp = 1.2
 
     # System config
-    k = 0.5
+    k = 3.5
     dt = 0.1
     dref = 4
 
     # vehicle config
-    RF = 3.3  # [m] distance from rear to vehicle front end of vehicle
-    RB = 0.8  # [m] distance from rear to vehicle back end of vehicle
-    W = 2.4  # [m] width of vehicle
+    RF = 3.3    # [m] distance from rear to vehicle front end of vehicle
+    RB = 0.8    # [m] distance from rear to vehicle back end of vehicle
+    W = 2.4     # [m] width of vehicle
     WD = 0.7 * W  # [m] distance between left-right wheels
-    WB = 2.5  # [m] Wheel base
-    TR = 0.44  # [m] Tyre radius
-    TW = 0.7  # [m] Tyre width
+    WB = 2.5      # [m] Wheel base
+    TR = 0.44     # [m] Tyre radius
+    TW = 0.7      # [m] Tyre width
     MAX_STEER = 0.65
 
 
@@ -52,7 +52,7 @@ class OdometryHandler:
         self.v = 0.0
         
         # Initialize the subscriber to receive odometry messages
-        rospy.Subscriber('/filtered_odom', Odometry, self.log_callback_odom)
+        rospy.Subscriber('/odom', Odometry, self.log_callback_odom)
 
     def log_callback_odom(self, msg):
         """
@@ -85,8 +85,7 @@ class Node:
         self.y = y
         self.yaw = yaw
         self.v = v
-        self.counter = 0
-        
+
         # Store a reference to the odometry handler object
         self.odom_handler = odom_handler
         
@@ -112,7 +111,7 @@ class Node:
         # Clamp acceleration between 0 and 1 for the gas pedal
         gas_pedal = np.clip(a, 0, 1)
         # Publish the gas pedal position
-        self.cmd_vel_pub.publish(gas_pedal + 0.25)
+        self.cmd_vel_pub.publish(gas_pedal)
 
     def run(self, ref_path, target_speed):
         """
@@ -248,7 +247,12 @@ def pid_control(target_v, v, dist):
 
 def main():
     # Load reference path from CSV file
-    with open('../../open-loop-controller/Task1(straight_line)/data/odom_data.csv', newline='') as f:
+    straight_line_waypoints = '../../open-loop-controller/Task1(straight_line)/data/odom_data.csv'
+    change_lane_waypoints = '../../open-loop-controller/Task2(switch_lane)/data/odom_data.csv'
+    circle_waypoints = '../../open-loop-controller/Task3(one_circle)/data/odom_data.csv'
+    infinityShape_waypoints = '../../open-loop-controller/Task4(two_circles)/data/odom_data.csv'
+
+    with open(circle_waypoints, newline='') as f:
         rows = list(reader(f, delimiter=','))
     
     # Create an odometry handler object
@@ -258,6 +262,7 @@ def main():
     ax, ay = [[float(i) for i in row] for row in zip(*rows[1:])]
     ax[0] = odom_handler.x
     ay[0] = odom_handler.y
+    
     # Generate the reference path
     cx, cy, cyaw, _, _ = cs.calc_spline_course(ax, ay, ds=C.dt)
     cyaw[0] = odom_handler.yaw
