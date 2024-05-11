@@ -212,7 +212,7 @@ class OdometryHandler:
 
         # Log noised orientation data to CSV
         with open(self.csv_noise_path, 'a', newline='') as f:
-            csv.writer(f).writerow([timestamp, noisy_position_x, noisy_position_y])
+            csv.writer(f).writerow([timestamp, noisy_position_x, noisy_position_y, yaw_before])
 
         # Process and filter noisy data
         self.filter_position_data(np.array([noisy_position_x, noisy_position_y]), timestamp)
