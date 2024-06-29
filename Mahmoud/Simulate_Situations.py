@@ -7,8 +7,10 @@ import random
 
 messages = [
         "Adaptive Cruise Control",
-        "Lane Change",
+        "Lane Change to the right",
+        "Lane Change to the left",
         "Emergency Stops",
+        "Gradually Stops",
         "All Good",
     ]
 
