@@ -1,0 +1,9 @@
+<launch>
+    <!-- Existing nodes -->
+    <node name="obstacle_detection_classification" pkg="obstacle_detection_classification" type="obstacle_detection_classification.py" output="screen"/>
+    <node name="odometry_imu_node" pkg="obstacle_detection_classification" type="odometry_imu_node.py" output="screen"/>
+    <node name="object_detection_subscriber" pkg="obstacle_detection_classification" type="object_detection_subscriber.py" output="screen"/>
+
+    <!-- New Image-Lidar Node -->
+    <node name="image_lidar_subscriber" pkg="obstacle_detection_classification" type="image_lidar_subscriber.py" output="screen"/>
+</launch>
