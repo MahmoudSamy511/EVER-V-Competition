@@ -113,8 +113,7 @@ class SituationHandler:
         rospy.sleep(3)
 
     def callback_state(self, data):
-        with self.lock:
-            self.commands_queue.append(data.data)
+        self.commands_queue.append(data.data)
 
     def handler(self):
         while not rospy.is_shutdown():
