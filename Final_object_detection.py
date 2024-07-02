@@ -2,6 +2,7 @@
 
 import rospy
 from sensor_msgs.msg import Image
+from std_msgs.msg import String
 from cv_bridge import CvBridge
 import cv2
 import cvlib as cv
@@ -13,6 +14,7 @@ class ImageSubscriber:
         rospy.init_node('object_detection_subscriber', anonymous=True)
         self.bridge = CvBridge()
         self.image_sub = rospy.Subscriber("/image", Image, self.image_callback)
+        self.label_pub = rospy.Publisher('/detected_object_labels', String, queue_size=10)
         self.window_name = 'Object Detection'
         self.color_green = (0, 255, 0)
         self.color_blue = (255, 0, 0)
@@ -57,6 +59,9 @@ class ImageSubscriber:
 
             # Add text with the label and confidence
             cv2.putText(cv_image, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, self.color_green, 2)
+            
+            # Publish the detected label
+            self.label_pub.publish(label[i])
 
     def detect_cones(self, cv_image):
         hsv_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2HSV)
@@ -79,6 +84,7 @@ class ImageSubscriber:
                 cv2.line(cv_image, (centroid_x, centroid_y - 10), (centroid_x, centroid_y + 10), self.color_blue, 2)
                 cv2.putText(cv_image, f"Cone: {confidence:.2f}", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
                             self.color_blue, 2)
+                self.label_pub.publish("Cone")
 
     def draw_info(self, image):
         cv2.imshow(self.window_name, image)
