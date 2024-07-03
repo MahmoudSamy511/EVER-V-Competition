@@ -9,6 +9,10 @@ class SituationHandler:
     commands_queue = []
 
     def __init__(self):
+
+
+
+
         self.lock = threading.Lock()
         self.cmd_vel_pub = rospy.Publisher('/cmd_vel', Float64, queue_size=10)
         self.brakes_pub = rospy.Publisher('/brakes', Float64, queue_size=10)
@@ -143,12 +147,14 @@ class SituationHandler:
 
 if __name__ == '__main__':
     try:
+
         rospy.init_node('situation_handler', anonymous=True)
         # Start simulation 
         startSimulation = rospy.Publisher('/startSimulation', Bool, queue_size=10)
+        rospy.sleep(0.5)
         startSimulation.publish(Bool(True))
         rospy.sleep(0.5)
-        
+
         node = SituationHandler()
         node.handler()
 

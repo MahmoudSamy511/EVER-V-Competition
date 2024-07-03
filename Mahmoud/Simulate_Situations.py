@@ -15,8 +15,9 @@ messages = [
     ]
 
 def talker():
-    pub = rospy.Publisher('situations', String, queue_size=10)
     rospy.init_node('situation_talker', anonymous=True)
+    pub = rospy.Publisher('situations', String, queue_size=10)
+    
     while not rospy.is_shutdown():
         situation_str = random.choice(messages)
         pub.publish(situation_str)
