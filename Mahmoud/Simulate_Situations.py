@@ -20,7 +20,7 @@ def talker():
     
     while not rospy.is_shutdown():
         situation_str = random.choice(messages)
-        pub.publish(situation_str)
+        pub.publish("Adaptive Cruise Control")
         rospy.sleep(1)
 
 if __name__ == '__main__':

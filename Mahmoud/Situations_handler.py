@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import rospy
-from std_msgs.msg import String, Float64, Int64, Bool
+from std_msgs.msg import String, Float64, Bool
 from nav_msgs.msg import Odometry
 import threading
 
@@ -11,21 +11,20 @@ class SituationHandler:
     def __init__(self):
 
 
-
-
         self.lock = threading.Lock()
         self.cmd_vel_pub = rospy.Publisher('/cmd_vel', Float64, queue_size=10)
         self.brakes_pub = rospy.Publisher('/brakes', Float64, queue_size=10)
         self.steering_pub = rospy.Publisher('/SteeringAngle', Float64, queue_size=10)
         
         self.sub = rospy.Subscriber('/situations', String, self.callback_state)
-        rospy.Subscriber('/distance', Int64, self.callback_distance)
+        rospy.Subscriber('/distance_front', Float64, self.callback_distance)
         rospy.Subscriber('/odom', Odometry, self.callback_speed)
+
 
         rospy.sleep(1)  
 
         self.desired_distance = 3
-        self.current_distance = 0
+        self.current_distance = 0.0
         self.Kp = 0.5  # Proportional gain
         self.Ki = 0.1  # Integral gain
         self.Kd = 0.05 # Derivative gain
@@ -50,24 +49,32 @@ class SituationHandler:
 
         self.sub = rospy.Subscriber('/situations', String, self.callback_state)
 
-    def Adaptive_Cruise_Control(self):      # Need Testing on the car
-        self.sub.unregister()
+    def Adaptive_Cruise_Control(self): # Need Testing on the car
+        while True:
+            # error = self.desired_distance - self.current_distance
+            # self.integral += error * self.dt
+            # derivative = (error - self.previous_error) / self.dt
+            # output = self.Kp * error + self.Ki * self.integral + self.Kd * derivative
+            # self.previous_error = error
+            # # Adjust speed and brakes
+            # if output > 0:
+            #     self.cmd_vel_pub.publish(min(output, 1.0))
+            #     self.brakes_pub.publish(0.0)
+            #     # rospy.sleep(1)
+            # else:
+            #     self.cmd_vel_pub.publish(0.0)
+            #     self.brakes_pub.publish(min(-output, 1.0))
+            #     # rospy.sleep(1)
 
-        print("Adaptive Cruise Control mode")
-        error = self.desired_distance - self.current_distance
-        self.integral += error * self.dt
-        derivative = (error - self.previous_error) / self.dt
-        output = self.Kp * error + self.Ki * self.integral + self.Kd * derivative
-        self.previous_error = error
-        # Adjust speed and brakes
-        if output > 0:
-            self.cmd_vel_pub.publish(min(output, 1.0))
-            self.brakes_pub.publish(0.0)
-        else:
-            self.cmd_vel_pub.publish(0.0)
-            self.brakes_pub.publish(min(-output, 1.0))
+            if self.current_distance <  self.desired_distance:
+                self.brakes_pub.publish(1.0)
+                self.cmd_vel_pub.publish(0.0)
+            else:
+                self.cmd_vel_pub.publish(0.5)
+                self.brakes_pub.publish(0.0)
 
-        self.sub = rospy.Subscriber('/situations', String, self.callback_state)
+            if len(self.commands_queue) != 0 and self.commands_queue.pop(0) != "Adaptive Cruise Control":
+                break
         
 
     def Lane_Change_to_right(self):            # Finished 
@@ -141,6 +148,7 @@ class SituationHandler:
 
     def callback_distance(self, data):
         self.current_distance = data.data
+
 
     def callback_speed(self, data):
         self.current_speed = data.twist.twist.linear.x
