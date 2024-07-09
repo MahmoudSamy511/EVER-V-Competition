@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
 import rospy
-from std_msgs.msg import String, Float64, Bool
+from std_msgs.msg import Float64, Bool, String
 from nav_msgs.msg import Odometry
-import threading
+import tf.transformations
+import math
 
 class SituationHandler:
     commands_queue = []
@@ -37,7 +38,7 @@ class SituationHandler:
         self.orientation_q = 0.0
         self.current_orientation = 0.0
 
-    def Emergency_Stop(self): # Hand Brake
+    def Emergency_Stop(self):
         self.sub.unregister()
 
         print("Emergency Stop mode")
@@ -79,65 +80,107 @@ class SituationHandler:
                 self.brakes_pub.publish(0.0)
 
             if len(self.commands_queue) != 0 and self.commands_queue.pop(0) != "Adaptive Cruise Control":
-                break
-        
+                break     
 
-        def change_lane(self, direction):
-            rospy.loginfo(f'direction is {direction}')
-            self.target_lane_center = 0.0
-            self.steering_angle_pub.publish(0.0)
+    def change_lane(self, direction):
+        self.sub.unregister()
+        rospy.loginfo(f'direction is {direction}')
+        self.target_lane_center = 0.0
+        self.steering_angle_pub.publish(0.0)
+        if self.current_position is None:
+            return
+
+        if direction == 'left':
+            self.target_lane_center -= self.lane_width
+        elif direction == 'right':
+            self.target_lane_center += self.lane_width
+
+        self.change_in_progress = True
+
+        while not rospy.is_shutdown() and self.change_in_progress:
             if self.current_position is None:
-                return
+                rospy.loginfo("Waiting for position data...")
+                continue
 
-            if direction == 'left':
-                self.target_lane_center -= self.lane_width
-            elif direction == 'right':
-                self.target_lane_center += self.lane_width
+            error = abs(self.target_lane_center) - abs(self.current_position.y)
 
-            self.change_in_progress = True
+            steering_angle = max(min(error * 5.0, self.max_steering_angle), -self.max_steering_angle)
+            rospy.loginfo("Current position: y = %.2f, Target position: y = %.2f, Steering angle: %.2f" %
+                        (self.current_position.y, self.target_lane_center, steering_angle))
 
-            while not rospy.is_shutdown() and self.change_in_progress:
-                if self.current_position is None:
-                    rospy.loginfo("Waiting for position data...")
-                    continue
+            if abs(error) < 0.2:  # If close enough to the target
+                self.change_in_progress = False
+                rospy.loginfo("Lane change completed.")
+                steering_angle = 0.0
 
-                error = abs(self.target_lane_center) - abs(self.current_position.y)
-
-                steering_angle = max(min(error * 5.0, self.max_steering_angle), -self.max_steering_angle)
-                rospy.loginfo("Current position: y = %.2f, Target position: y = %.2f, Steering angle: %.2f" %
-                            (self.current_position.y, self.target_lane_center, steering_angle))
-
-                if abs(error) < 0.2:  # If close enough to the target
-                    self.change_in_progress = False
-                    rospy.loginfo("Lane change completed.")
-                    steering_angle = 0.0
-
-                # Publish commands
-                if direction == 'right':
-                    self.steering_angle_pub.publish(Float64(-1 * steering_angle))
-                else:
-                    self.steering_angle_pub.publish(Float64(steering_angle))
-                
-                self.cmd_vel_pub.publish(Float64(0.1))
-                
-            
+            # Publish commands
             if direction == 'right':
-                while self.current_orientation < 78.43:
-                    self.steering_angle_pub.publish(Float64(steering_angle))
-                    steering_angle += 1
+                self.steering_angle_pub.publish(Float64(-1 * steering_angle))
             else:
-                while self.current_orientation > 102.0:
-                    self.steering_angle_pub.publish(Float64(-steering_angle))
-                    steering_angle += 1
-
-
-            for _ in range(4):
-                if direction == 'right':
-                    self.steering_angle_pub.publish(Float64(-1 * steering_angle))
-                else:
-                    self.steering_angle_pub.publish(Float64(steering_angle))
+                self.steering_angle_pub.publish(Float64(steering_angle))
             
-            self.steering_angle_pub.publish(0.0)
+            self.cmd_vel_pub.publish(Float64(0.1))
+            
+        
+        if direction == 'right':
+            while self.current_orientation < 78.43:
+                self.steering_angle_pub.publish(Float64(steering_angle))
+                steering_angle += 1
+        else:
+            while self.current_orientation > 102.0:
+                self.steering_angle_pub.publish(Float64(-steering_angle))
+                steering_angle += 1
+
+
+        for _ in range(4):
+            if direction == 'right':
+                self.steering_angle_pub.publish(Float64(-1 * steering_angle))
+            else:
+                self.steering_angle_pub.publish(Float64(steering_angle))
+        
+        self.steering_angle_pub.publish(0.0)
+
+        self.sub = rospy.Subscriber('/situations', String, self.callback_state)
+
+    # def Lane_Change_to_right(self):            # Finished But NOT USED
+    #     self.sub.unregister()
+    #     rospy.sleep(1.1)  # Wait for publishers to register.
+
+    #     # Send gas pedal command and start turning
+    #     self.steering_pub.publish(Float64(-9.0))
+    #     rospy.sleep(1.5)
+    #     # Straight 
+    #     self.steering_pub.publish(Float64(0.0))
+    #     rospy.sleep(0.175)
+    #     # Justify lane
+    #     self.steering_pub.publish(Float64(9.0))
+    #     rospy.sleep(1.5)
+    #     # Restore State
+    #     self.brakes_pub.publish(Float64(0.0))
+    #     self.cmd_vel_pub.publish(Float64(0.2))
+    #     self.steering_pub.publish(Float64(0.0))
+
+    #     self.sub = rospy.Subscriber('/situations', String, self.callback_state)
+
+    # def Lane_Change_to_left(self): # Finished
+    #     self.sub.unregister()
+
+    #     rospy.sleep(0.5)  # Wait for publishers to register.
+    #     # Send gas pedal command and start turning
+    #     self.steering_pub.publish(Float64(9.0))
+    #     rospy.sleep(1.5)
+    #     # Straight 
+    #     self.steering_pub.publish(Float64(0.0))
+    #     rospy.sleep(0.175)
+    #     # Justify lane
+    #     self.steering_pub.publish(Float64(-9.0))
+    #     rospy.sleep(1.3)
+    #     # Restore State
+    #     self.brakes_pub.publish(Float64(0.0))
+    #     self.cmd_vel_pub.publish(Float64(0.2))
+    #     self.steering_pub.publish(Float64(0.0))
+
+    #     self.sub = rospy.Subscriber('/situations', String, self.callback_state)
 
     def Stay_in_lane(self): # Done
         print("Stay in lane mode")
@@ -177,7 +220,8 @@ class SituationHandler:
         self.current_position = data.pose.pose.position
         self.orientation_q = data.pose.pose.orientation
 
-        orientation_list = [self.orientation_q.x, self.orientation_q.y, self.orientation_q.z, self.orientation_q.w]
+        orientation_list = [self.orientation_q.x, self.orientation_q.y, self.orientation_q.z, 
+                            self.orientation_q.w]
         (roll, pitch, yaw) = tf.transformations.euler_from_quaternion(orientation_list)
         self.current_orientation = math.degrees(yaw)
 
