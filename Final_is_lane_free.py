@@ -62,8 +62,8 @@ class LaneAndPavementDetection:
         is_right_lane_free = self.right_lane_available and not self.right_pavement_detected
 
         # Log lane availability and pavement detection status
-        rospy.loginfo(f"is_left_lane_free: {is_left_lane_free}")
-        rospy.loginfo(f"is_right_lane_free: {is_right_lane_free}")
+        # rospy.loginfo(f"is_left_lane_free: {is_left_lane_free}")
+        # rospy.loginfo(f"is_right_lane_free: {is_right_lane_free}")
 
         # Publish the lane status
         self.left_lane_free_pub.publish(Bool(is_left_lane_free))
