@@ -3,8 +3,6 @@
 import rospy
 from std_msgs.msg import Float64, Bool, String
 from nav_msgs.msg import Odometry
-import math
-import tf.transformations
 import tf.transformations
 import math
 
@@ -143,46 +141,6 @@ class SituationHandler:
         self.steering_angle_pub.publish(0.0)
 
         self.sub = rospy.Subscriber('/situations', String, self.callback_state)
-
-    # def Lane_Change_to_right(self):            # Finished But NOT USED
-    #     self.sub.unregister()
-    #     rospy.sleep(1.1)  # Wait for publishers to register.
-
-    #     # Send gas pedal command and start turning
-    #     self.steering_pub.publish(Float64(-9.0))
-    #     rospy.sleep(1.5)
-    #     # Straight 
-    #     self.steering_pub.publish(Float64(0.0))
-    #     rospy.sleep(0.175)
-    #     # Justify lane
-    #     self.steering_pub.publish(Float64(9.0))
-    #     rospy.sleep(1.5)
-    #     # Restore State
-    #     self.brakes_pub.publish(Float64(0.0))
-    #     self.cmd_vel_pub.publish(Float64(0.2))
-    #     self.steering_pub.publish(Float64(0.0))
-
-    #     self.sub = rospy.Subscriber('/situations', String, self.callback_state)
-
-    # def Lane_Change_to_left(self): # Finished
-    #     self.sub.unregister()
-
-    #     rospy.sleep(0.5)  # Wait for publishers to register.
-    #     # Send gas pedal command and start turning
-    #     self.steering_pub.publish(Float64(9.0))
-    #     rospy.sleep(1.5)
-    #     # Straight 
-    #     self.steering_pub.publish(Float64(0.0))
-    #     rospy.sleep(0.175)
-    #     # Justify lane
-    #     self.steering_pub.publish(Float64(-9.0))
-    #     rospy.sleep(1.3)
-    #     # Restore State
-    #     self.brakes_pub.publish(Float64(0.0))
-    #     self.cmd_vel_pub.publish(Float64(0.2))
-    #     self.steering_pub.publish(Float64(0.0))
-
-    #     self.sub = rospy.Subscriber('/situations', String, self.callback_state)
 
     def Stay_in_lane(self): # Done
         print("Stay in lane mode")
