@@ -16,12 +16,12 @@ messages = [
 
 def talker():
     rospy.init_node('situation_talker', anonymous=True)
-    pub = rospy.Publisher('situations', String, queue_size=10)
+    pub = rospy.Publisher('/situations', String, queue_size=10)
     
     while not rospy.is_shutdown():
         situation_str = random.choice(messages)
-        pub.publish("Adaptive Cruise Control")
-        rospy.sleep(1)
+        pub.publish(situation_str)
+        rospy.sleep(3)
 
 if __name__ == '__main__':
     try:
