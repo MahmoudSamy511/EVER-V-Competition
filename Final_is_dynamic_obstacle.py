@@ -26,7 +26,7 @@ class LidarSubscriber:
                 
                 # Print x, y, z coordinates and their distance only
                 if distance >= 1:
-                    rospy.loginfo(f"Distance to object: {distance:.2f} meters")
+                    # rospy.loginfo(f"Distance to object: {distance:.2f} meters")
                     
                     self.reading_count += 1
                     
@@ -38,10 +38,10 @@ class LidarSubscriber:
                     if self.last_distance is not None:
                         distance_diff = distance - self.last_distance
                         if distance_diff <= 0.01:
-                            rospy.loginfo("Static")
+                            # rospy.loginfo("Static")
                             self.publish_status("static")
                         else:
-                            rospy.loginfo(f"Dynamic .. Velocity: {distance_diff:.2f} m/s")
+                            # rospy.loginfo(f"Dynamic .. Velocity: {distance_diff:.2f} m/s")
                             self.publish_status("dynamic")
                     
                     self.last_distance = distance
