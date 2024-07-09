@@ -8,7 +8,6 @@ import cv2
 import cvlib as cv
 import tensorflow as tf
 import numpy as np
-import json
 
 
 class ImageSubscriber:
@@ -179,20 +178,16 @@ class ImageSubscriber:
                 self.lane_objects[position] = "cone"
 
     def publish_lane_objects(self):
-        # Create a dictionary to publish
-        publish_dict = {}
-        for position in self.lane_objects.keys():
-            label = self.lane_objects[position]
-            if label is None:
-                publish_dict[position] = "none"
-            else:
-                publish_dict[position] = label
-
-        # Convert dictionary to JSON string and publish
-        publish_str = json.dumps(publish_dict)
-        # rospy.loginfo(publish_str)
-        self.label_pub.publish(publish_str)
-
+        # Create the desired string format manually
+        lane_objects_str = "{"
+        lane_objects_str += f"left lane: {self.lane_objects['left lane'] if self.lane_objects['left lane'] is not None else 'none'}, "
+        lane_objects_str += f"center: {self.lane_objects['center'] if self.lane_objects['center'] is not None else 'none'}, "
+        lane_objects_str += f"right lane: {self.lane_objects['right lane'] if self.lane_objects['right lane'] is not None else 'none'}"
+        lane_objects_str += "}"
+        
+        # rospy.loginfo(f"Publishing: {lane_objects_str}")
+        self.label_pub.publish(lane_objects_str)
+        
         # Reset the lane_objects dictionary for the next frame
         self.lane_objects = {"left lane": None, "center": None, "right lane": None}
 
