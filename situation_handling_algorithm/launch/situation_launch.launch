@@ -1,0 +1,3 @@
+<launch>
+  <node name="obstacle_handling_node" pkg="situation_handling_algorithm" type="algorithm.py" output="screen"/>
+</launch>
