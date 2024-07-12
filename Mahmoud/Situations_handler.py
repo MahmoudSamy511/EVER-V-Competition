@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 
 import rospy
-from std_msgs.msg import Float64, Bool, String
+from std_msgs.msg import Float64, Bool, String,Float32
 from nav_msgs.msg import Odometry
 import tf.transformations
 import math
+from Final_lidar_distance import LidarSubscriber
 
 class SituationHandler:
-    commands_queue = ['All Good','All Good','All Good','All Good','Lane Change to the left','All Good','All Good','Lane Change to the right']
+    commands_queue = ['Adaptive Cruise Control']
 
     def __init__(self):
         rospy.init_node('situation_handler', anonymous=True)
@@ -16,24 +17,18 @@ class SituationHandler:
         self.brakes_pub = rospy.Publisher('/brakes', Float64, queue_size=10)
         self.steering_pub = rospy.Publisher('/SteeringAngle', Float64, queue_size=10)
         self.sub = rospy.Subscriber('/situations', String, self.callback_state)
-        rospy.Subscriber('/distance_front', Float64, self.callback_distance)
+        rospy.Subscriber('/lidar_distance', Float32, self.callback_distance)
         rospy.Subscriber('/odom', Odometry, self.odom_callback)
         rospy.sleep(0.5)  
 
         # Start simulation 
         startSimulation = rospy.Publisher('/startSimulation', Bool, queue_size=10)
-        rospy.sleep(0.25)
+        rospy.sleep(0.5)
         startSimulation.publish(Bool(True))
+        rospy.sleep(0.5)
 
-        # Adaptive Cruise Control parameters
-        self.desired_distance = 3
         self.current_distance = 0.0
-        self.Kp = 0.5  # Proportional gain
-        self.Ki = 0.1  # Integral gain
-        self.Kd = 0.05 # Derivative gain
-        self.integral = 0
-        self.previous_error = 0
-        self.dt = 0.1  # Time step
+        self.current_speed = 0.0
 
         # Change lane parameters
         self.current_position = None
@@ -64,33 +59,71 @@ class SituationHandler:
 
         self.sub = rospy.Subscriber('/situations', String, self.callback_state)
 
-    def Adaptive_Cruise_Control(self): # Need Testing on the car
+    def Adaptive_Cruise_Control(self):
         rospy.loginfo("Adaptive Cruise Control mode")
-        while True:
-            # error = self.desired_distance - self.current_distance
-            # self.integral += error * self.dt
-            # derivative = (error - self.previous_error) / self.dt
-            # output = self.Kp * error + self.Ki * self.integral + self.Kd * derivative
-            # self.previous_error = error
-            # # Adjust speed and brakes
-            # if output > 0:
-            #     self.cmd_vel_pub.publish(min(output, 1.0))
-            #     self.brakes_pub.publish(0.0)
-            #     # rospy.sleep(1)
-            # else:
-            #     self.cmd_vel_pub.publish(0.0)
-            #     self.brakes_pub.publish(min(-output, 1.0))
-            #     # rospy.sleep(1)
+        self.cmd_vel_pub.publish(0.0)
+        self.brakes_pub.publish(0.0)
 
-            if self.current_distance <  self.desired_distance:
-                self.brakes_pub.publish(1.0)
-                self.cmd_vel_pub.publish(0.0)
+        # Initialize state variables if not already done
+        if not hasattr(self, 'state'):
+            self.state = {
+                'K_p': 0.15,
+                'K_d': 1.0,
+                'K_i': 0.0003,
+                'max_output': 1.0,
+                'desired_distance': 5.0,
+                'desired_speed': 3.0,
+                'prev_setpoint': 0.0,
+                'time_step': 0.1,
+                'integral_setpoint': 0.0,
+                'maintaining_distance': False
+            }
+
+        while not rospy.is_shutdown():
+            delta_distance = self.current_distance - 2 * self.state['desired_distance'] - self.current_speed**2 / (2 * 2.11)
+
+            # if the car ahead does not allow to get to cruise speed
+            # use safe following distance as a measure until cruise speed is reached again
+            if delta_distance < 0:
+                self.state['maintaining_distance'] = True
+            elif self.current_speed >= self.state['desired_speed'] :
+                self.state['maintaining_distance'] = False
+
+            if self.state['maintaining_distance']:
+                # Override if we are too close to the car in front
+                set_point = delta_distance
             else:
-                self.cmd_vel_pub.publish(0.5)
-                self.brakes_pub.publish(0.0)
+                # Maintain cruise speed if distance is not too close
+                set_point = self.state['desired_speed'] - self.current_speed
 
-            if len(self.commands_queue) != 0 and self.commands_queue.pop(0) != "Adaptive Cruise Control":
-                break     
+            # Calculate control using PID
+            control = (self.state['K_p'] * set_point +
+                    self.state['K_d'] * (set_point - self.state['prev_setpoint']) +
+                    self.state['K_i'] * self.state['integral_setpoint'])
+
+            # Constrain control to the range -1.0 to 1.0
+            control = max(min(control, self.state['max_output']), -self.state['max_output'])
+
+            rospy.loginfo("Distance: %.2f, Set Point: %.2f, Control: %.2f" % (self.current_distance, set_point, control))
+
+            # Adjust speed and brakes based on control
+            if control >= 0:
+                self.cmd_vel_pub.publish(control)
+                self.brakes_pub.publish(0.0)
+            else:
+                self.cmd_vel_pub.publish(0.0)
+                self.brakes_pub.publish(-control)
+
+            # Update state variables
+            self.state['prev_setpoint'] = set_point
+            self.state['integral_setpoint'] += set_point
+
+            # Exit loop if a new command is received
+            if len(self.commands_queue) != 0 and self.commands_queue[0] != "Adaptive Cruise Control":
+                break
+
+            rospy.sleep(self.state['time_step'])
+
 
     def change_lane(self, direction):
         self.sub.unregister()
@@ -164,7 +197,7 @@ class SituationHandler:
 
     def handler(self):
         while not rospy.is_shutdown():
-            if self.commands_queue:
+            if len(self.commands_queue) != 0:
                 command = self.commands_queue.pop(0)
                 rospy.loginfo(f"Received command: {command}")
                 if command == "Emergency Stops":
