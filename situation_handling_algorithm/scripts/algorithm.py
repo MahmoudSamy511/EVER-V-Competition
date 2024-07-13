@@ -28,7 +28,7 @@ class ObstacleHandlingNode:
         rospy.loginfo(f"Lidar distance received: {lidar_distance}")
         if lidar_distance > 30:  # adjustable
             self.actions_pub.publish('All Good')
-            rospy.loginfo("Published True to /stay_in_lane")
+            rospy.loginfo("all good")
         else:
             self.handle_obstacle()
 
@@ -48,7 +48,7 @@ class ObstacleHandlingNode:
             self.handle_car_obstacle()
         else:
             self.actions_pub.publish('Gradually Stops')
-            rospy.loginfo("Published True to /slowdown")
+            rospy.loginfo("slowdown")
 
     def handle_car_obstacle(self):
         if self.left_lane_obstacle == 'None' and self.right_lane_obstacle == 'None':
@@ -62,7 +62,7 @@ class ObstacleHandlingNode:
             rospy.loginfo("Published True to /change_lane_to_right")
         else:
             self.actions_pub.publish('Adaptive Cruise Control')
-            rospy.loginfo("Published True to /maintain_desired_distance")
+            rospy.loginfo("Adaptive Cruise Control")
 
     def handle_human_obstacle_dynamic(self):
         self.actions_pub.publish('Emergency Stops')
@@ -81,9 +81,12 @@ class ObstacleHandlingNode:
         elif self.right_lane_obstacle == 'None':
             self.actions_pub.publish('Lane Change to the right')
             rospy.loginfo("Published True to /change_lane_to_right")
-        else:
+        elif self.left_lane_obstacle == 'car' and self.center_obstacle == 'car' and self.right_lane_obstacle == 'car':
             self.actions_pub.publish('Emergency Stops')
             rospy.loginfo("Published True to /emergency_break")
+        else:
+            self.actions_pub.publish('Gradually Stops')
+            rospy.loginfo("slowdown")
 
     def object_labels_callback(self, msg):
         try:
