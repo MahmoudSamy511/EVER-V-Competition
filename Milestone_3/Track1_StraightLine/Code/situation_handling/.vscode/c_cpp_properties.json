@@ -1,0 +1,25 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/opt/ros/noetic/include/**",
+        "/home/mostafa/catkin_ws/src/coppeliasim_plugin_velodyne/include/**",
+        "/home/mostafa/catkin_ws/src/detection/include/**",
+        "/home/mostafa/catkin_ws/src/simROS/include/**",
+        "/home/mostafa/catkin_ws/src/situation_handling/include/**",
+        "/home/mostafa/catkin_ws/src/teleop_twist_keyboard/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}
