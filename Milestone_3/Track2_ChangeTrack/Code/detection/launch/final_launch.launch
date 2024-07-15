@@ -1,0 +1,7 @@
+<launch>
+    <node name="is_dynamic_obstacle" pkg="detection" type="Final_is_dynamic_obstacle.py" output="screen"/>
+    <node name="is_lane_free" pkg="detection" type="Final_is_lane_free.py" output="screen"/>
+    <node name="object_detection" pkg="detection" type="test_essam.py" output="screen"/>
+    <node name="lidar_distance" pkg="detection" type="Final_lidar_distance.py" output="screen"/>
+
+</launch>

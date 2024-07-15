@@ -1,0 +1,24 @@
+<!--
+    Launch file for the situation_handling package
+    This file launches the Simulate_Situations and Situations_handler nodes
+-->
+
+<launch>
+    <!-- Here should be the node from object detection team -->
+    <!-- <node> </node> -->
+
+
+    <node name="is_dynamic_obstacle" pkg="detection" type="Final_is_dynamic_obstacle.py" output="screen"/>
+    <node name="is_lane_free" pkg="detection" type="Final_is_lane_free.py" output="screen"/>
+    <node name="object_detection" pkg="detection" type="Final_object_detection.py" output="screen"/>
+    <node name="lidar_distance" pkg="detection" type="Final_lidar_distance.py" output="screen"/>
+
+    <!-- Launch the handling algorithm/proccessing node -->
+    <node name="obstacle_handling_node" pkg="situation_handling" type="algorithm.py" output="screen">
+    </node>
+
+    <!-- Launch Situations_handler node -->
+    <node name="situations_handler" pkg="situation_handling" type="Situations_handler.py" output="screen">
+    </node>
+
+</launch>
